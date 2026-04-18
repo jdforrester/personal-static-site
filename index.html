@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>James D. Forrester — Personal Web site</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Personal homepage of James D. Forrester, software developer at the Wikimedia Foundation, based between New York and London.">
+
+  <!-- Codex design tokens: light always, dark only when OS prefers it -->
+  <link rel="stylesheet" href="https://unpkg.com/@wikimedia/codex-design-tokens@2.4.0/theme-wikimedia-ui.css">
+  <link rel="stylesheet" href="https://unpkg.com/@wikimedia/codex-design-tokens@2.4.0/theme-wikimedia-ui-mode-dark.css" media="(prefers-color-scheme: dark)">
+  <!-- Codex component styles (.cdx-button etc.) -->
+  <link rel="stylesheet" href="https://unpkg.com/@wikimedia/codex@2.4.0/dist/codex.style.css">
+
+  <style>
+    /* ============================================================
+       skin.css — Wikipedia Vector 2022 layout classes (.wp-*)
+       ============================================================ */
+
+    body { margin: 0; }
+
+    .wp-app {
+      min-height: 100vh;
+      background: var(--background-color-base);
+      font-family: var(--font-family-sans);
+      color: var(--color-base);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER */
+    .wp-header {
+      position: sticky; top: 0; z-index: 30;
+      display: flex; align-items: center; gap: 16px;
+      padding: 8px 16px;
+      background: var(--background-color-base);
+      border-bottom: 1px solid var(--border-color-muted);
+      height: 56px;
+    }
+    .wp-header__left  { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+    .wp-brand         { display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; }
+    .wp-brand__globe  { width: 40px; height: 40px; }
+    .wp-brand__name   { font-family: var(--font-family-serif); font-size: 20px; line-height: 1; color: var(--color-emphasized); letter-spacing: .02em; }
+    .wp-brand__tag    { font-size: 12px; color: var(--color-subtle); letter-spacing: .15em; text-transform: uppercase; margin-top: 2px; }
+    .wp-header__search { flex: 1; max-width: 640px; }
+    .wp-header__right  { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+    .wp-header__link   { font-size: 13px; font-weight: 400; }
+
+    /* Header buttons: Codex's .cdx-button uses --color-neutral (gray) not --color-progressive,
+       and .cdx-button--quiet hover uses mix-blend-mode which flips to 'screen' in dark mode
+       causing a blown-out glow. Pin these to semantic tokens at higher specificity. */
+    .wp-header .cdx-button {
+      color: var(--color-progressive);
+      background-color: transparent;
+      border-color: transparent;
+      mix-blend-mode: normal;
+    }
+    .wp-header .cdx-button:hover {
+      color: var(--color-progressive--hover, var(--color-progressive));
+      background-color: var(--background-color-neutral-subtle);
+      border-color: transparent;
+      mix-blend-mode: normal;
+    }
+
+    /* BODY */
+    .wp-body { display: flex; flex: 1; }
+
+    /* MAIN */
+    .wp-main {
+      flex: 1;
+      max-width: 1024px;
+      padding: 0 32px 48px;
+      min-width: 0;
+      margin: 0 auto;
+    }
+
+    /* ARTICLE */
+    .wp-article { padding-top: 24px; }
+    .wp-article__title {
+      font-family: var(--font-family-serif);
+      font-size: 32px; line-height: 1.3;
+      color: var(--color-emphasized);
+      font-weight: 400;
+      margin: 0 0 4px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border-color-muted);
+    }
+    .wp-article__byline  { font-size: 13px; color: var(--color-subtle); font-style: italic; margin-bottom: 16px; }
+    .wp-article__layout  { display: flex; gap: 32px; }
+    .wp-article__body    { flex: 1; min-width: 0; font-size: 16px; line-height: 1.625; }
+    .wp-article__body p  { margin: 0 0 14px; }
+    .wp-article__h2 {
+      font-family: var(--font-family-serif);
+      font-size: 24px; line-height: 1.3;
+      font-weight: 400; color: var(--color-emphasized);
+      margin: 28px 0 12px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--border-color-muted);
+    }
+    .wp-article__ext li    { margin-bottom: 4px; }
+
+    /* INFOBOX */
+    .wp-infobox {
+      width: 300px; flex-shrink: 0;
+      background: var(--background-color-neutral);
+      border: 1px solid var(--border-color-subtle);
+      border-radius: 2px;
+      font-size: 13px;
+      align-self: flex-start;
+    }
+    .wp-infobox__header {
+      padding: 8px 12px;
+      background: var(--background-color-neutral-subtle);
+      border-bottom: 1px solid var(--border-color-subtle);
+      font-weight: 700;
+      font-family: var(--font-family-sans);
+      text-align: center;
+      font-size: 14px;
+      color: var(--color-emphasized);
+    }
+    .wp-infobox__photo   { padding: 8px; text-align: center; background: var(--background-color-base); }
+    .wp-infobox__table   { width: 100%; border-collapse: collapse; background: var(--background-color-neutral); }
+    .wp-infobox__table th,
+    .wp-infobox__table td {
+      padding: 8px 10px;
+      vertical-align: top;
+      text-align: left;
+      border-top: 1px solid var(--border-color-subtle);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .wp-infobox__table th {
+      background: var(--background-color-neutral-subtle);
+      font-weight: 700;
+      width: 30%;
+      color: var(--color-emphasized);
+    }
+    .wp-infobox__table td div { margin-bottom: 2px; }
+
+    /* FOOTER */
+    .wp-footer {
+      padding: 32px 32px 40px;
+      border-top: 1px solid var(--border-color-muted);
+      font-size: 12px;
+      color: var(--color-subtle);
+      line-height: 1.6;
+      margin-top: 40px;
+    }
+    .wp-footer__stamp  { margin-bottom: 8px; }
+    .wp-footer__legal  { margin-bottom: 16px; max-width: 720px; }
+    .wp-footer__badges { display: flex; gap: 16px; opacity: .7; }
+
+    /* Collapse rails under 900 px */
+    @media (max-width: 900px) {
+.wp-article__layout { flex-direction: column; }
+      .wp-infobox { width: 100%; }
+      .wp-header__link { display: none; }
+    }
+
+    /* ============================================================
+       site.css — personal-site tweaks
+       ============================================================ */
+
+    /* Gallery grid */
+    .pf-gallery {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 8px;
+      margin: 8px 0 4px;
+    }
+    .pf-gallery__item--landscape { grid-column: span 4; } /* 3 per row */
+    .pf-gallery__item--portrait  { grid-column: span 3; } /* 4 per row */
+    .pf-gallery__item--portrait .pf-gallery__thumb { aspect-ratio: 4 / 5; }
+    .pf-gallery__item {
+      display: block;
+      background: var(--background-color-neutral-subtle);
+      border: 1px solid var(--border-color-subtle);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .pf-gallery__thumb {
+      aspect-ratio: 5 / 4;
+      position: relative;
+      background: var(--background-color-neutral);
+    }
+    .pf-gallery__thumb img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+    }
+    .pf-gallery__caption {
+      padding: 6px 8px 8px;
+      font-size: 12px;
+      line-height: 1.4;
+      color: var(--color-base);
+      background: var(--background-color-neutral-subtle);
+      border-top: 1px solid var(--border-color-muted);
+    }
+    .pf-gallery__caption em {
+      display: block;
+      color: var(--color-subtle);
+      font-size: 12px;
+      margin-top: 2px;
+      font-style: normal;
+    }
+
+    /* Portfolio CTA block */
+    .pf-cta {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      padding: 14px 16px;
+      margin: 18px 0 10px;
+      background: var(--background-color-neutral-subtle);
+      border: 1px solid var(--border-color-subtle);
+      border-left: 4px solid var(--color-progressive);
+      border-radius: 2px;
+      color: var(--color-base);
+      text-decoration: none;
+    }
+    .pf-cta:hover { background: var(--background-color-interactive); text-decoration: none; }
+    .pf-cta__icon {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 2px;
+      background: var(--background-color-base);
+      border: 1px solid var(--border-color-subtle);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--color-progressive);
+    }
+    .pf-cta__body  { flex: 1; min-width: 0; font-size: 14px; line-height: 1.5; }
+    .pf-cta__title {
+      display: block;
+      font-family: var(--font-family-serif);
+      font-size: 18px;
+      color: var(--color-emphasized);
+      margin-bottom: 2px;
+    }
+    .pf-cta__url {
+      display: block;
+      font-family: var(--font-family-monospace);
+      font-size: 12px;
+      color: var(--color-subtle);
+      word-break: break-all;
+    }
+
+    /* Infobox link list */
+    .pf-infobox-links {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .pf-infobox-links li { margin-bottom: 4px; }
+    .pf-infobox-links a {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 4px;
+      word-break: break-all;
+    }
+    .pf-infobox-links .pf-host {
+      color: var(--color-subtle);
+      font-size: 12px;
+    }
+
+    /* Portrait placeholder */
+    .pf-portrait {
+      margin: 0 0 4px;
+    }
+    .pf-portrait img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+    .pf-portrait figcaption {
+      font-size: 12px;
+      color: var(--color-subtle);
+      line-height: 1.4;
+      padding: 4px 0 0;
+      text-align: center;
+    }
+
+    /* Disambiguation hatnote bar */
+    .wp-article__disambig {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      font-size: 13px;
+      font-style: italic;
+      color: var(--color-base);
+      padding: 8px 12px;
+      margin-bottom: 14px;
+      background: var(--background-color-neutral-subtle);
+      border: 1px solid var(--border-color-subtle);
+      border-left: 3px solid var(--border-color-base);
+      border-radius: 2px;
+      line-height: 1.6;
+    }
+    .wp-article__disambig svg {
+      flex-shrink: 0;
+      margin-top: 1px;
+      color: var(--color-subtle);
+    }
+    .wp-article__disambig a { font-style: normal; }
+
+    /* Ensure all article links use the Codex progressive token so dark mode flips correctly.
+       Without this, <a> elements fall back to the browser's hardcoded default blue (#0000ee),
+       which doesn't change in dark mode unlike var(--color-progressive). */
+    .wp-article a,
+    .wp-footer a {
+      color: var(--color-progressive);
+    }
+
+    /* H3 in article body */
+    .wp-article__body h3 {
+      font-size: 17px;
+      font-weight: 700;
+      margin: 18px 0 8px;
+      color: var(--color-emphasized);
+    }
+
+    /* Career timeline list */
+    .pf-career {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      border-top: 1px solid var(--border-color-muted);
+    }
+    .pf-career li {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-color-muted);
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    .pf-career__role { font-weight: 700; color: var(--color-emphasized); }
+    .pf-career__org  { color: var(--color-subtle); margin-left: 4px; }
+    .pf-career__when { color: var(--color-subtle); font-variant-numeric: tabular-nums; font-size: 13px; }
+
+    @media (max-width: 640px) {
+      .pf-gallery__item--landscape,
+      .pf-gallery__item--portrait { grid-column: span 6; } /* 2 per row on mobile */
+      .pf-career li { grid-template-columns: 1fr; gap: 2px; }
+      .pf-career__when { order: -1; }
+    }
+
+    /* JDF logo SVG styling */
+    .wp-brand__jdf-logo {
+      display: block;
+      width: 40px;
+      height: 40px;
+    }
+    .wp-brand__jdf-logo .jdf-text {
+      font-family: var(--font-family-serif);
+      font-size: 20px;
+      font-weight: 400;
+      fill: var(--color-emphasized);
+      letter-spacing: -.1em;
+    }
+  </style>
+</head>
+<body>
+<div class="wp-app">
+
+  <!-- HEADER -->
+  <header class="wp-header">
+    <div class="wp-header__left">
+      <a class="wp-brand" href="./">
+        <svg class="wp-brand__jdf-logo" viewBox="0 0 40 40" role="img" aria-label="JDF monogram">
+          <rect x="1" y="1" width="38" height="38" rx="2" ry="2"/>
+          <text x="20" y="27" text-anchor="middle" class="jdf-text">JDF</text>
+        </svg>
+        <div class="wp-brand__text">
+          <div class="wp-brand__name" style="font-size:18px">JDFORRESTER.ME</div>
+          <div class="wp-brand__tag">Personal homepage</div>
+        </div>
+      </a>
+    </div>
+    <div class="wp-header__search" aria-hidden="true"></div>
+    <div class="wp-header__right">
+      <a class="cdx-button cdx-button--quiet wp-header__link" href="https://jdforrester.myportfolio.com/" target="_blank" rel="noopener noreferrer">
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" style="fill:currentColor;flex-shrink:0"><path d="M10 16c-4.455 0-6.685-5.386-3.535-8.535S15 6.545 15 11a5 5 0 01-5 5M6.42 2.56l-.67.64c-.37.357-.865.808-1.38.81H2C.914 4 0 4.712 0 5.76v10.48C0 17.27 1 18 2 18h16c1 0 2-.716 2-1.76V5.76C20 4.723 19 4 18 4h-2.37c-.515-.002-1.01-.453-1.38-.81l-.67-.64A2 2 0 0012.2 2H7.8a2 2 0 00-1.38.56"/><circle cx="10" cy="11" r="3"/></svg>
+        Portfolio
+      </a>
+      <a class="cdx-button cdx-button--quiet wp-header__link" href="#elsewhere">
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" style="fill:currentColor;flex-shrink:0"><path d="M4.83 15h2.91a4.9 4.9 0 01-1.55-2H5a3 3 0 110-6h3a3 3 0 012.82 4h2.1a5 5 0 00.08-.83v-.34A4.83 4.83 0 008.17 5H4.83A4.83 4.83 0 000 9.83v.34A4.83 4.83 0 004.83 15"/><path d="M15.17 5h-2.91a4.9 4.9 0 011.55 2H15a3 3 0 110 6h-3a3 3 0 01-2.82-4h-2.1a5 5 0 00-.08.83v.34A4.83 4.83 0 0011.83 15h3.34A4.83 4.83 0 0020 10.17v-.34A4.83 4.83 0 0015.17 5"/></svg>
+        Links
+      </a>
+    </div>
+  </header>
+
+  <div class="wp-body">
+
+    <!-- MAIN -->
+    <main class="wp-main">
+      <article class="wp-article">
+        <h1 class="wp-article__title">James D. Forrester</h1>
+        <div class="wp-article__byline">From the personal Web site of James D. Forrester</div>
+
+        <div class="wp-article__disambig" role="note">
+          <svg width="16" height="16" viewBox="0 0 20 20" aria-hidden="true" style="fill:currentColor"><path d="M10 0C4.477 0 0 4.477 0 10s4.477 10 10 10 10-4.477 10-10S15.523 0 10 0zm1 15H9V9h2v6zm0-8H9V5h2v2z"/></svg>
+          <span>You may be looking for:
+            <a href="https://spph.ubc.ca/faculty/emeritus-faculty/j-d-forrester/" target="_blank" rel="noopener noreferrer">J. D. Forrester</a>, professor of public health emeritus (UBC);
+            <a href="https://foresterlab.cfans.umn.edu/" target="_blank" rel="noopener noreferrer">James D. Forester</a>, ecologist (University of Minnesota);
+            <a href="https://en.wikipedia.org/wiki/James_S._Forrester_(cardiologist)" target="_blank" rel="noopener noreferrer">James S. Forrester</a>, cardiologist; or
+            <a href="https://en.wikipedia.org/wiki/James_Forrester" target="_blank" rel="noopener noreferrer">other people named James Forrester</a>.
+          </span>
+        </div>
+
+        <div class="wp-article__layout">
+          <div class="wp-article__body">
+
+            <p style="font-size: 18px;"><b>James D. Forrester</b> is a British technologist, currently based between New York and London. He has worked for the Wikimedia Foundation non-profit since 2012, serving as the founding tech lead for the Abstract Wikipedia project, a multi-lingual knowledge initiative, since 2020.</p>
+
+            <section id="biography">
+              <h2 class="wp-article__h2">Biography</h2>
+              <p>Forrester's professional work sits at the intersection of open knowledge, open source, digital engagement, software engineering, and public-sector digital services.
+              <p>At the <a href="https://wikimediafoundation.org/">Wikimedia Foundation</a>, Forrester currently works on <a href="https://abstract.wikipedia.org/">Abstract Wikipedia</a>, which aims to make encyclopædic content available in many languages, especially under-resourced ones, by separating knowledge from the language in which it is expressed. It is powered by <a href="https://www.wikifunctions.org/">Wikifunctions</a>, a wiki-controlled community lambda service for the Wikimedia movement.</p>
+              <p>In his career at Wikimedia, Forrester has worked in many roles, as a software engineer and technical product manager. The work has spanned devops, developer productivity, content services, the Structured Data on Commons project, and the VisualEditor project, amongst others.</p>
+              <p>Before the Foundation, Forrester was a <a href="https://www.gov.uk/government/organisations/civil-service">British civil servant</a>, working with the <a href="https://www.gov.uk/government/organisations/government-digital-service">Government Digital Service</a> (GDS), on <a href="https://www.data.gov.uk/">data.gov.uk</a>, and at related offices responsible for digital transformation across central government.</p>
+              <p>Outside of work, Forrester photographs architectures, city life, landscapes, and flora, and aims to publish them daily on social media; a selection is published on his portfolio. He maintains a strong interest in UK and US domestic national politics, geopolitics, governance, and statecraft more generally.</p>
+              <p>Forrester has contributed to many Wikimedia projects as a volunteer editor, starting with the English Wikipedia since 2002, where his focus has been on post-War British governmental figures, roles, and institutions. A strong believer in the power of interaction to bring people together, Forrester has attended every Wikimania conference since they started in 2005, presenting, connecting, and supporting fellow volunteers there alongside dozens of Hackathons, meetups, and other Wikimedia and wider open knowledge community events.</p>
+
+            </section>
+
+            <section id="career">
+              <h2 class="wp-article__h2">Career</h2>
+              <ul class="pf-career">
+                <li>
+                  <span class="pf-career__when">2020–Present</span>
+                  <span><span class="pf-career__role">Software developer</span><span class="pf-career__org">— Abstract Wikipedia, Wikimedia Foundation</span></span>
+                </li>
+                <li>
+                  <span class="pf-career__when">2019–2020</span>
+                  <span><span class="pf-career__role">Developer productivity</span><span class="pf-career__org">— Release Engineering, Wikimedia Foundation</span></span>
+                </li>
+                <li>
+                  <span class="pf-career__when">2018–2019</span>
+                  <span><span class="pf-career__role">Structured Data on Commons</span><span class="pf-career__org">— Product, Wikimedia Foundation</span></span>
+                </li>
+                <li>
+                  <span class="pf-career__when">2014–2018</span>
+                  <span><span class="pf-career__role">Lead Product manager</span><span class="pf-career__org">— Contributors, Wikimedia Foundation</span></span>
+                </li>
+                <li>
+                  <span class="pf-career__when">2012–2016</span>
+                  <span><span class="pf-career__role">Technical product manager</span><span class="pf-career__org">— Editing, Wikimedia Foundation</span></span>
+                </li>
+                <li>
+                  <span class="pf-career__when">2005–2012</span>
+                  <span><span class="pf-career__role">British civil servant</span><span class="pf-career__org">— Government Digital Service, data.gov.uk, Cabinet Office, HM Treasury, HM Revenue and Customs, the Foreign and Commonwealth Office, the Crown Prosecution Service, <em>etc.</em></span></span>
+                </li>
+              </ul>
+            </section>
+
+            <section id="photography">
+              <h2 class="wp-article__h2">Photography</h2>
+              <p>Forrester photographs with his 'phone in the course of travel and daily life. His portfolio is organised by subject theme, rather than by year.</p>
+
+              <a class="pf-cta" href="https://jdforrester.myportfolio.com/" target="_blank" rel="noopener noreferrer">
+                <span class="pf-cta__icon">
+                  <svg width="22" height="22" viewBox="0 0 20 20" aria-hidden="true" style="fill:currentColor"><path d="M10 1a9 9 0 1 0 9 9 9 9 0 0 0-9-9zm-1 16.93A7 7 0 0 1 3.06 11H6a13.6 13.6 0 0 0 .68 3.9zm0-5.93H3.06a7 7 0 0 1 0-4H9c-.12.66-.18 1.33-.18 2s.06 1.34.18 2zm7.94 4H14a13.6 13.6 0 0 1-.68 3.9A7 7 0 0 0 15.94 16zM10.5 17.9A11.34 11.34 0 0 1 9.5 14h1a11.34 11.34 0 0 1 1 3.9zm.5-5.9h-2a10.7 10.7 0 0 1 0-4h2a10.7 10.7 0 0 1 0 4zm0-6H9A11.34 11.34 0 0 1 10 2.1 11.34 11.34 0 0 1 11 6zm1.62 0A13.6 13.6 0 0 0 12 2.1a7 7 0 0 1 2.94 3.9zM7.68 2.1A13.6 13.6 0 0 0 7 6H3.06A7 7 0 0 1 7.68 2.1z"/></svg>
+                </span>
+                <span class="pf-cta__body">
+                  <span class="pf-cta__title">View the full photography portfolio</span>
+                  <span class="pf-cta__url">jdforrester.myportfolio.com</span>
+                </span>
+                <svg width="18" height="18" viewBox="0 0 20 20" aria-hidden="true" style="fill:currentColor;color:var(--color-subtle);flex-shrink:0"><path d="M7.5 15L12.58 10 7.5 5l-1.08 1.08L10.42 10l-4 3.92z"/></svg>
+              </a>
+
+              <h3>Selected works</h3>
+              <div class="pf-gallery">
+                <div class="pf-gallery__item pf-gallery__item--landscape">
+                  <div class="pf-gallery__thumb"><img src="assets/Blossom-festival-candid.webp" alt="Blossom festival candid" loading="lazy"></div>
+                  <div class="pf-gallery__caption">Blossom festival photo shoot candid</div>
+                </div>
+                <div class="pf-gallery__item pf-gallery__item--landscape">
+                  <div class="pf-gallery__thumb"><img src="assets/Flora-perfection.webp" alt="Flora perfection" loading="lazy"></div>
+                  <div class="pf-gallery__caption">Floral perfection</div>
+                </div>
+                <div class="pf-gallery__item pf-gallery__item--landscape">
+                  <div class="pf-gallery__thumb"><img src="assets/Glorious-proportions.webp" alt="Glorious proportions" loading="lazy"></div>
+                  <div class="pf-gallery__caption">Small size, glorious proportions</div>
+                </div>
+                <div class="pf-gallery__item pf-gallery__item--portrait">
+                  <div class="pf-gallery__thumb"><img src="assets/Chrysler-been-the-hulks.webp" alt="Chrysler Building" loading="lazy"></div>
+                  <div class="pf-gallery__caption">Chrysler between the hulks</div>
+                </div>
+                <div class="pf-gallery__item pf-gallery__item--portrait">
+                  <div class="pf-gallery__thumb"><img src="assets/Flying-high.webp" alt="Flying high" loading="lazy"></div>
+                  <div class="pf-gallery__caption">Flying high</div>
+                </div>
+                <div class="pf-gallery__item pf-gallery__item--portrait">
+                  <div class="pf-gallery__thumb"><img src="assets/London-backstreets.webp" alt="London backstreets" loading="lazy"></div>
+                  <div class="pf-gallery__caption">An empty Shad Thames</div>
+                </div>
+                <div class="pf-gallery__item pf-gallery__item--portrait">
+                  <div class="pf-gallery__thumb"><img src="assets/Pool-in-morning-light.webp" alt="Pool in morning light" loading="lazy"></div>
+                  <div class="pf-gallery__caption">Pool in morning light</div>
+                </div>
+                <div class="pf-gallery__item pf-gallery__item--landscape">
+                  <div class="pf-gallery__thumb"><img src="assets/Magnolia_×_soulangeana_blossom.webp" alt="Magnolia × soulangeana blossom" loading="lazy"></div>
+                  <div class="pf-gallery__caption">Magnolia × soulangeana</div>
+                </div>
+                <div class="pf-gallery__item pf-gallery__item--landscape">
+                  <div class="pf-gallery__thumb"><img src="assets/Sea-swan-swimming.webp" alt="Sea swan swimming" loading="lazy"></div>
+                  <div class="pf-gallery__caption">Sea swan swimming</div>
+                </div>
+                <div class="pf-gallery__item pf-gallery__item--landscape">
+                  <div class="pf-gallery__thumb"><img src="assets/Sunrise-over-Roosevelt-Island-Bridge.webp" alt="Sunrise over Roosevelt Island Bridge" loading="lazy"></div>
+                  <div class="pf-gallery__caption">Sunrise over Roosevelt Island Bridge</div>
+                </div>
+                <div class="pf-gallery__item pf-gallery__item--portrait">
+                  <div class="pf-gallery__thumb"><img src="assets/Rainbow-over-flooded-bench.webp" alt="Rainbow over flooded bench" loading="lazy"></div>
+                  <div class="pf-gallery__caption">Rainbow, flooded bench</div>
+                </div>
+                <div class="pf-gallery__item pf-gallery__item--portrait">
+                  <div class="pf-gallery__thumb"><img src="assets/Sunset-JP-Morgan-HQ.webp" alt="Sunset, J.P. Morgan HQ" loading="lazy"></div>
+                  <div class="pf-gallery__caption">J.P. Morgan HQ sunset</div>
+                </div>
+                <div class="pf-gallery__item pf-gallery__item--portrait">
+                  <div class="pf-gallery__thumb"><img src="assets/St.-Catherine's-flowers.webp" alt="St. Catherine's flowers" loading="lazy"></div>
+                  <div class="pf-gallery__caption">St. Catherine's flowers</div>
+                </div>
+                <div class="pf-gallery__item pf-gallery__item--portrait">
+                  <div class="pf-gallery__thumb"><img src="assets/Mudlarking-under-Blackfriars-Bridge.webp" alt="Mudlarking under Blackfriars Bridge" loading="lazy"></div>
+                  <div class="pf-gallery__caption">Blackfriars mudlarking</div>
+                </div>
+                <div class="pf-gallery__item pf-gallery__item--landscape">
+                  <div class="pf-gallery__thumb"><img src="assets/Westminster-Abbey.webp" alt="Westminster Abbey" loading="lazy"></div>
+                  <div class="pf-gallery__caption">Westminster Abbey from Dean's Yard</div>
+                </div>
+                <div class="pf-gallery__item pf-gallery__item--landscape">
+                  <div class="pf-gallery__thumb"><img src="assets/Uplook-uplight.webp" alt="Uplook, uplight" loading="lazy"></div>
+                  <div class="pf-gallery__caption">Uplook, uplight</div>
+                </div>
+                <div class="pf-gallery__item pf-gallery__item--landscape">
+                  <div class="pf-gallery__thumb"><img src="assets/Palace-of-Westminster.webp" alt="Palace of Westminster" loading="lazy"></div>
+                  <div class="pf-gallery__caption">Palace of Westminster, perpendicular</div>
+                </div>
+              </div>
+            </section>
+
+            <section id="elsewhere">
+              <h2 class="wp-article__h2">Elsewhere on the Web</h2>
+              <ul class="wp-article__ext">
+                  <li><a href="https://meta.wikimedia.org/wiki/User:Jdforrester" target="_blank" rel="noopener noreferrer">Wikimedia volunteer account</a></li>
+                  <li><a href="https://meta.wikimedia.org/wiki/User:Jdforrester_(WMF)" target="_blank" rel="noopener noreferrer">Wikimedia staff account</a></li>
+                  <li><a href="https://mastodon.social/@jdforrester" target="_blank" rel="noopener noreferrer">Mastodon</a></li>
+                  <li><a href="https://jdforrester.myportfolio.com/" target="_blank" rel="noopener noreferrer">Adobe Portfolio</a></li>
+                  <li><a href="https://www.instagram.com/jdforrester_/" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+              </ul>
+            </section>
+          </div>
+
+          <!-- INFOBOX -->
+          <aside class="wp-infobox" aria-label="Quick facts">
+            <div class="wp-infobox__header">James D. Forrester</div>
+            <div class="wp-infobox__photo">
+              <figure class="pf-portrait">
+                <img src="assets/James_Forrester_working_at_Wikimania_2023.cropped.webp"
+                     alt="James Forrester working at Wikimania 2023">
+                <figcaption>
+                  <em><a href="https://commons.wikimedia.org/wiki/File:James_Forrester_working_at_Wikimania_2023.jpg"
+                             target="_blank" rel="noopener noreferrer">James Forrester working at Wikimania 2023</a></em><br>Zack McCune,
+                  <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener noreferrer">CC BY-SA 4.0</a>; cropped
+                </figcaption>
+              </figure>
+            </div>
+            <table class="wp-infobox__table">
+              <tbody>
+                <tr><th scope="row">Occupation</th><td><div>Software developer</div></td></tr>
+                <tr><th scope="row">Employer</th><td><div>Wikimedia Foundation</div></td></tr>
+                <tr><th scope="row">Known for</th><td><div>Abstract Wikipedia</div><div>Wikifunctions</div><div>Structured Data on Commons</div><div>VisualEditor</div><div>MediaWiki-wide contributions</div></td></tr>
+                <tr><th scope="row">Based in</th><td><div>New York City</div><div>London</div></td></tr>
+                <tr><th scope="row">Interests</th><td><div>Open knowledge · Photography · Public-sector digital services · UK and US domestic politics · Geopolitics · Statecraft</div></td></tr>
+                <tr><th scope="row">Links</th><td>
+                  <ul class="pf-infobox-links">
+                    <li><a href="https://meta.wikimedia.org/wiki/User:Jdforrester" target="_blank" rel="noopener noreferrer">Volunteer account</a><span class="pf-host"> · wikimedia.org</span></li>
+                    <li><a href="https://meta.wikimedia.org/wiki/User:Jdforrester_(WMF)" target="_blank" rel="noopener noreferrer">Staff account</a><span class="pf-host"> · wikimedia.org</span></li>
+                    <li><a href="https://mastodon.social/@jdforrester" target="_blank" rel="noopener noreferrer">Mastodon</a><span
+                        class="pf-host"> · mastodon.social</span></li>
+                    <li><a href="https://jdforrester.myportfolio.com/" target="_blank" rel="noopener noreferrer">Portfolio</a><span class="pf-host"> · myportfolio.com</span></li>
+                    <li><a href="https://www.instagram.com/jdforrester_/" target="_blank" rel="noopener noreferrer">Instagram</a><span class="pf-host"> · instagram.com</span></li>
+                  </ul>
+                </td></tr>
+              </tbody>
+            </table>
+          </aside>
+        </div>
+      </article>
+
+      <!-- FOOTER -->
+      <footer class="wp-footer">
+        <div class="wp-footer__stamp">This page was last updated on 18 April 2026.</div>
+        <div class="wp-footer__legal">© 2026 James D. Forrester. Text on this page is available under the <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">Creative Commons Attribution 4.0 License</a>; photographs by the author are available under the same licence, except where noted. This is a personal site and does not represent the views of any employer, association, or organisation.</div>
+        <div class="wp-footer__badges">
+          <!-- Creative Commons logo (inline SVG) -->
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 20 20" aria-label="Creative Commons" role="img" style="fill:currentColor">
+            <title>Creative Commons logo</title>
+            <path d="M10 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8m0-18A9.94 9.94 0 0 0 0 10a9.94 9.94 0 0 0 10 10 9.94 9.94 0 0 0 10-10A9.94 9.94 0 0 0 10 0"/>
+            <path d="M13.49 11.67c-1 0-1.43-.57-1.43-1.71s.43-1.71 1.43-1.71c.57 0 .86.29 1.14.86l1.29-.71A2.8 2.8 0 0 0 13.2 7a2.9 2.9 0 0 0-2.14.86A2.7 2.7 0 0 0 10.2 10a3 3 0 0 0 .86 2.29 2.9 2.9 0 0 0 2.14.86 3.24 3.24 0 0 0 2.71-1.57L14.63 11a1.46 1.46 0 0 1-1.14.71zm-6 0c-1 0-1.43-.57-1.43-1.71s.43-1.71 1.43-1.71c.57 0 .86.29 1.14.86l1.29-.71A2.8 2.8 0 0 0 7.2 7a2.9 2.9 0 0 0-2.14.86A2.7 2.7 0 0 0 4.2 10a3 3 0 0 0 .86 2.29 2.9 2.9 0 0 0 2.14.86 3.24 3.24 0 0 0 2.71-1.57L8.63 11a1.46 1.46 0 0 1-1.14.71z"/>
+          </svg>
+        </div>
+      </footer>
+    </main>
+  </div>
+</div>
+
+</body>
+</html>
